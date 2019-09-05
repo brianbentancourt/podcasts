@@ -3,6 +3,19 @@ export default class extends React.Component {
     return <div>
       <h1>¡Hola Platzi!</h1>
       <p>Bienvenidos al curso de Next.JS</p>
+      <img src='/static/logo.png' alt="Logo" />
+
+      <style jsx>{`
+        h1 {
+          color: red;
+        }
+        img {
+          max-width:50%;
+          display:block;
+          margin: 0 auto;
+        }
+      `}</style>
+
     </div>
   }
 }
