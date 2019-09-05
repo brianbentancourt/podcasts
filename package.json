@@ -12,6 +12,7 @@
   "author": "Brian Bentancourt",
   "license": "ISC",
   "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "next": "^9.0.5",
     "react": "^16.9.0",
     "react-dom": "^16.9.0"
