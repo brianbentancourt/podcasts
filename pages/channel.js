@@ -1,47 +1,62 @@
 import Link from 'next/link'
-import Layout from '../components/Layout';
+import Layout from '../components/Layout'
+import Error from 'next/error'
 
 export default class extends React.Component {
 
-  static async getInitialProps({ query }) {
-    let idChannel = query.id
+  static async getInitialProps({ query, res }) {
+    try {
+      let idChannel = query.id
 
-    let [reqChannel, reqSeries, reqAudios] = await Promise.all([
-      fetch(`https://api.audioboom.com/channels/${idChannel}`),
-      fetch(`https://api.audioboom.com/channels/${idChannel}/child_channels`),
-      fetch(`https://api.audioboom.com/channels/${idChannel}/audio_clips`)
-    ])
+      let [reqChannel, reqSeries, reqAudios] = await Promise.all([
+        fetch(`https://api.audioboom.com/channels/${idChannel}`),
+        fetch(`https://api.audioboom.com/channels/${idChannel}/child_channels`),
+        fetch(`https://api.audioboom.com/channels/${idChannel}/audio_clips`)
+      ])
 
-    let dataChannel = await reqChannel.json()
-    let channel = dataChannel.body.channel
+      if(reqChannel.status >= 400){
+        res.statusCode = reqChannel.status
+        return { channel: null, audioClips: null, series: null, statusCode: reqChannel.status }
+      }
 
-    let dataAudios = await reqAudios.json()
-    let audioClips = dataAudios.body.audio_clips
+      let dataChannel = await reqChannel.json()
+      let channel = dataChannel.body.channel
 
-    let dataSeries = await reqSeries.json()
-    let series = dataSeries.body.channels
+      let dataAudios = await reqAudios.json()
+      let audioClips = dataAudios.body.audio_clips
 
-    return { channel, audioClips, series }
+      let dataSeries = await reqSeries.json()
+      let series = dataSeries.body.channels
+
+      return { channel, audioClips, series, statusCode: 200 }
+
+    } catch (err) {
+      res.statusCode = 503
+      return { channel: null, audioClips: null, series: null, statusCode: 503 }
+    }
   }
 
   render() {
-    const { channel, audioClips, series } = this.props
+    const { channel, audioClips, series, statusCode } = this.props
+
+    if (statusCode !== 200)
+      return <Error statusCode={statusCode} />
 
     return <Layout title={channel.title}>
 
       <div className="banner" style={{ backgroundImage: `url(${channel.urls.banner_image.original})` }} />
 
-      <h1>{ channel.title }</h1>
+      <h1>{channel.title}</h1>
 
-      { series.length > 0 &&
+      {series.length > 0 &&
         <div>
           <h2>Series</h2>
           <div className="channels">
-            { series.map((serie) => (
-              <Link href={`/channel?id=${ serie.id }`} prefetch>
+            {series.map((serie) => (
+              <Link href={`/channel?id=${serie.id}`} prefetch>
                 <a className="channel">
-                  <img src={ serie.urls.logo_image.original } alt=""/>
-                  <h2>{ serie.title }</h2>
+                  <img src={serie.urls.logo_image.original} alt="" />
+                  <h2>{serie.title}</h2>
                 </a>
               </Link>
             ))}
@@ -50,12 +65,12 @@ export default class extends React.Component {
       }
 
       <h2>Ultimos Podcasts</h2>
-      { audioClips.map((clip) => (
+      {audioClips.map((clip) => (
         <Link href={`/podcast?id=${clip.id}`} prefetch key={clip.id}>
           <a className='podcast'>
-            <h3>{ clip.title }</h3>
+            <h3>{clip.title}</h3>
             <div className='meta'>
-              { Math.ceil(clip.duration / 60) } minutes
+              {Math.ceil(clip.duration / 60)} minutes
             </div>
           </a>
         </Link>
