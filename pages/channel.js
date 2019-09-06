@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Layout from '../components/Layout';
 
 export default class extends React.Component {
 
@@ -26,8 +27,7 @@ export default class extends React.Component {
   render() {
     const { channel, audioClips, series } = this.props
 
-    return <div>
-      <header>Podcasts</header>
+    return <Layout title={channel.title}>
 
       <div className="banner" style={{ backgroundImage: `url(${channel.urls.banner_image.original})` }} />
 
@@ -51,18 +51,18 @@ export default class extends React.Component {
 
       <h2>Ultimos Podcasts</h2>
       { audioClips.map((clip) => (
-        <div className="podcast" key={clip.id}>{ clip.title }</div>
+        <Link href={`/podcast?id=${clip.id}`} prefetch key={clip.id}>
+          <a className='podcast'>
+            <h3>{ clip.title }</h3>
+            <div className='meta'>
+              { Math.ceil(clip.duration / 60) } minutes
+            </div>
+          </a>
+        </Link>
       ))}
 
 
       <style jsx>{`
-        header {
-          color: #fff;
-          background: #8756ca;
-          padding: 15px;
-          text-align: center;
-        }
-
         .banner {
           width: 100%;
           padding-bottom: 25%;
@@ -128,6 +128,6 @@ export default class extends React.Component {
           background: white;
         }
       `}</style>
-    </div>
+    </Layout>
   }
 }
